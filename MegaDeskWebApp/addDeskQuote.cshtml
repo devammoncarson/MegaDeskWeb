@@ -1,0 +1,62 @@
+﻿@{
+    Layout = "~/_Layout.cshtml";
+    Page.Title = "Add Desk Quote";
+
+    Validation.RequireField("width", "Width is required");
+    Validation.RequireField("height", "Height is required");
+    Validation.RequireField("numDrawers", "You haven't entered the Number of Drawers");
+    Validation.RequireField("customerName", "Name is required");
+    Validation.RequireField("materialType", "You haven't entered the Material Type");
+    Validation.RequireField("deliverType", "You haven't entered the Deliver Type");
+
+
+    var width = "";
+    var height = "";
+    var numDrawers = "";
+    var customerName = "";
+    var materialType = "";
+    var deliverType = "";
+
+    if (IsPost)
+    {
+        if (Validation.IsValid())
+        {
+            width = Request.Form["width"];
+            height = Request.Form["height"];
+            numDrawers = Request.Form["numDrawers"];
+            customerName = Request.Form["customerName"];
+            materialType = Request.Form["materialType"];
+            deliverType = Request.Form["deliverType"];
+
+            var db = Database.Open("MegaDeskDB");
+            var insertCommand = "INSERT INTO Movies (Title, Genre, Year) VALUES(@0, @1, @2)";
+            db.Execute(insertCommand, title, genre, year);
+
+            Response.Redirect("~/Movies");
+        }
+    }
+}
+
+<h2>Add a Movie</h2>
+@Html.ValidationSummary()
+<form method="post">
+    <fieldset>
+        <legend>Movie Information</legend>
+        <p>
+            <label for="title">Title:</label>
+            <input type="text" name="title" value="@Request.Form["title"]" />
+            @Html.ValidationMessage("title")
+
+        <p>
+            <label for="genre">Genre:</label>
+            <input type="text" name="genre" value="@Request.Form["genre"]" />
+            @Html.ValidationMessage("genre")
+
+        <p>
+            <label for="year">Year:</label>
+            <input type="text" name="year" value="@Request.Form["year"]" />
+            @Html.ValidationMessage("year")
+
+        <p><input type="submit" name="buttonSubmit" value="Add Movie" /></p>
+    </fieldset>
+</form>

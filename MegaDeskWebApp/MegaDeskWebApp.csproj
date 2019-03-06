@@ -104,6 +104,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Desks.cshtml" />
+    <Content Include="addDeskQuote.cshtml" />
+    <Content Include="deleteDeskQuote.cshtml" />
+    <Content Include="editDeskQuote.cshtml" />
     <None Include="packages.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
