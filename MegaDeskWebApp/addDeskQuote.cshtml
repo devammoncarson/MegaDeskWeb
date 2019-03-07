@@ -1,62 +1,112 @@
-﻿@{
+﻿@using MegaDesk;
+@{
+    Page.Title = "Add Desk";
     Layout = "~/_Layout.cshtml";
-    Page.Title = "Add Desk Quote";
 
+    var db = WebMatrix.Data.Database.Open("MegaDeskWeb");
+
+    var shippingData = db.Query("SELECT * FROM Shipping");
+    var surfaceData = db.Query("SELECT * FROM SurfaceMaterial");
+
+    decimal quoteAmount = 0;
+
+    Validation.RequireField("customerName", "You must enter a name");
     Validation.RequireField("width", "Width is required");
-    Validation.RequireField("height", "Height is required");
-    Validation.RequireField("numDrawers", "You haven't entered the Number of Drawers");
-    Validation.RequireField("customerName", "Name is required");
-    Validation.RequireField("materialType", "You haven't entered the Material Type");
-    Validation.RequireField("deliverType", "You haven't entered the Deliver Type");
+    Validation.RequireField("depth", "Depth is required");
+    Validation.RequireField("numOfDrawers", "You haven't entered the number of drawers");
+    Validation.RequireField("surfaceMaterial", "You haven't entered a material");
+    Validation.RequireField("rushOrder", "You haven't entered a rush order time");
 
+    string customerName = "";
+    decimal width;
+    decimal depth;
+    int numOfDrawers;
+    int surfaceMaterial;
+    int rushOrder;
+    DateTime date = System.DateTime.Now;
 
-    var width = "";
-    var height = "";
-    var numDrawers = "";
-    var customerName = "";
-    var materialType = "";
-    var deliverType = "";
+    // need to make a function to get quoteAmount, but don't do it here
 
-    if (IsPost)
+    if (IsPost && Validation.IsValid())
     {
-        if (Validation.IsValid())
-        {
-            width = Request.Form["width"];
-            height = Request.Form["height"];
-            numDrawers = Request.Form["numDrawers"];
-            customerName = Request.Form["customerName"];
-            materialType = Request.Form["materialType"];
-            deliverType = Request.Form["deliverType"];
+        customerName = Request.Form["customerName"];
+        width = Convert.ToDecimal(Request.Form["width"]);
+        depth = Convert.ToDecimal(Request.Form["depth"]);
+        numOfDrawers = Convert.ToInt32(Request.Form["numOfDrawers"]);
+        surfaceMaterial = Convert.ToInt32(Request.Form["surfaceMaterial"]);
+        rushOrder = Convert.ToInt32(Request.Form["rushOrder"]);
 
-            var db = Database.Open("MegaDeskDB");
-            var insertCommand = "INSERT INTO Movies (Title, Genre, Year) VALUES(@0, @1, @2)";
-            db.Execute(insertCommand, title, genre, year);
+        Desk desk = new Desk(width, depth, numOfDrawers, surfaceMaterial);
+        DeskQuote deskQuote = new DeskQuote(desk, rushOrder, customerName, date);
 
-            Response.Redirect("~/Movies");
-        }
+        quoteAmount = deskQuote.Price;
+
+        var insertDeskCommand = "INSERT INTO Desk (Width, Depth, NumOfDrawers, SurfaceMaterialId) VALUES(@0, @1, @2, @3)";
+        db.Execute(insertDeskCommand, width, depth, numOfDrawers, surfaceMaterial);
+        var insertDeskQuoteCommand = "INSERT INTO DeskQuote (CustomerName, DeskId, ShippingId, Date, QuoteAmount) VALUES(@0, @1, @2, @3, @4)";
+        var deskId = db.GetLastInsertId();
+        db.Execute(insertDeskQuoteCommand, customerName, deskId, rushOrder, date, quoteAmount);
+        Response.Redirect("~/Desks");
     }
-}
 
-<h2>Add a Movie</h2>
+
+}
+<h2>Add a Desk</h2>
+<p><a href="~/Desks">Return to desk listing</a></p>
 @Html.ValidationSummary()
 <form method="post">
     <fieldset>
-        <legend>Movie Information</legend>
+        <legend>Desk Information</legend>
         <p>
-            <label for="title">Title:</label>
-            <input type="text" name="title" value="@Request.Form["title"]" />
-            @Html.ValidationMessage("title")
+            <label for="customerName">Customer Name:</label>
+            <input id="customerName" type="text" name="customerName" value="@Request.Form["customerName"]" />
+            @Html.ValidationMessage("customerName")
+        </p>
 
         <p>
-            <label for="genre">Genre:</label>
-            <input type="text" name="genre" value="@Request.Form["genre"]" />
-            @Html.ValidationMessage("genre")
+            <label for="width">Width:(num)</label>
+            <input id="width" type="text" name="width" value="@Request.Form["width"]" />
+            @Html.ValidationMessage("width")
+        </p>
 
         <p>
-            <label for="year">Year:</label>
-            <input type="text" name="year" value="@Request.Form["year"]" />
-            @Html.ValidationMessage("year")
+            <label for="depth">Depth:(num)</label>
+            <input id="depth" type="text" name="depth" value="@Request.Form["depth"]" />
+            @Html.ValidationMessage("depth")
+        </p>
 
-        <p><input type="submit" name="buttonSubmit" value="Add Movie" /></p>
+        <p>
+            <label for="numOfDrawers">Number Of Drawers:(num)</label>
+            <input id="numOfDrawers" type="text" name="numOfDrawers" value="@Request.Form["numOfDrawers"]" />
+            @Html.ValidationMessage("numOfDrawers")
+        </p>
+
+        <p>
+            <label for="surfaceMaterial">Surface Material:</label>
+            <select id="surfaceMaterial" type="text" name="surfaceMaterial">
+                <option selected disabled>Select a Material</option>
+                @foreach (var row in surfaceData)
+                {
+                    <option selected="@(Request.Form["surfaceMaterial"] == @"row.SurfaceMaterialId")" value="@row.SurfaceMaterialId">@row.SurfaceMaterial</option>
+                }
+            </select>
+            @Html.ValidationMessage("surfaceMaterial")
+        </p>
+
+        <p>
+            <label for="rushOrder">Rush Order:(num)</label>
+            <select id="rushOrder" name="rushOrder">
+                <option selected disabled>Select Shipping</option>
+                @foreach (var row in shippingData)
+                {
+                    <option selected=@(Request.Form["rushOrder"] == @"row.ShippingId") value="@row.ShippingId">@row.NumOfDays</option>
+                }
+            </select>
+            @Html.ValidationMessage("rushOrder")
+        </p>
+
+        <p><input type="submit" name="buttonSubmit" value="Add Desk" /></p>
+
+        <p><label>Quote: $</label>@quoteAmount</p>
     </fieldset>
 </form>
