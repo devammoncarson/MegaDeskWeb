@@ -2,17 +2,17 @@
     Layout = "~/_Layout.cshtml";
 
     Page.Title = "MegaDesk Quotes";
-    var db = WebMatrix.Data.Database.Open("MegaDeskDB");
-    var selectOrder = @"SELECT dq.QuoteId, c.CustomerName, d.Width, d.Depth, d.NumOfDrawers, s.ShippingDays, sf.MaterialName
+    var db = WebMatrix.Data.Database.Open("MegaDeskDB2");
+    var selectOrder = @"SELECT dq.DeskQuoteId, c.CustomerName, d.Width, d.Depth, d.NumOfDrawers, s.ShippingDays, sf.MaterialName
         FROM DeskQuote dq
         LEFT JOIN Customer c ON
             dq.CustomerId = c.CustomerId
         LEFT JOIN Desk d ON
-            d.Id = dq.DeskId
+            d.DeskId = dq.DeskId
         LEFT JOIN Shipping s ON
             s.ShippingId = dq.ShippingId
         LEFT JOIN SurfaceMaterial sf ON
-            sf.MaterialId = dq.MaterialId"; 
+            sf.MaterialId = dq.MaterialId";
 
 
     var selectedData = db.Query(selectOrder);
@@ -41,7 +41,7 @@
             alternatingRowStyle: "alt",
             columns: grid.Columns(
                 grid.Column(format: @<a href="~/EditDesk?id=@item.QuoteId">Edit</a>),
-                        @*grid.Column(format:@<strong>@item.Title</strong>),*@
+        @*grid.Column(format:@<strong>@item.Title</strong>),*@
                         grid.Column("CustomerId"),
                         grid.Column("Date"),
                         grid.Column("Total"),
