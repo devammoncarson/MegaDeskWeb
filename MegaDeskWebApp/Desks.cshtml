@@ -3,16 +3,16 @@
 
     Page.Title = "MegaDesk Quotes";
     var db = WebMatrix.Data.Database.Open("MegaDeskDB");
-    var selectOrder = @"SELECT dq.DeskQuoteId c.Customer, d.Width, d.Depth, d.NumDrawers, s.DeliverType, sf.SurfaceMaterial
-                    FROM DeskQuote dq
-                    LEFT JOIN Customer c ON
-                        dq.CustomerId = c.CustomerId
-                    LEFT JOIN Desk d ON
-                        d.Desk = dq.Desk
-                    LEFT JOIN Shipping s 0N
-                        d.ShippingId = dq.ShippingId
-                    LEFT JOIN SurfaceMaterial sf ON
-                        sf.SurfaceMaterialid = d.SurfaceMaterialid";
+    var selectOrder = @"SELECT dq.QuoteId, c.CustomerName, d.Width, d.Depth, d.NumOfDrawers, s.ShippingDays, sf.MaterialName
+        FROM DeskQuote dq
+        LEFT JOIN Customer c ON
+            dq.CustomerId = c.CustomerId
+        LEFT JOIN Desk d ON
+            d.Id = dq.DeskId
+        LEFT JOIN Shipping s ON
+            s.ShippingId = dq.ShippingId
+        LEFT JOIN SurfaceMaterial sf ON
+            sf.MaterialId = dq.MaterialId"; 
 
 
     var selectedData = db.Query(selectOrder);
