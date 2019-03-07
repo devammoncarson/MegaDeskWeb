@@ -2,17 +2,19 @@
     Layout = "~/_Layout.cshtml";
 
     var db = WebMatrix.Data.Database.Open("MegaDeskDB");
-    var selectCommand = "SELECT * FROM DeskQuote;";
-    var searchTerm = "";
+    var selectOrder = @"SELECT dq.DeskQuoteId c.Customer, d.Width, d.Depth, d.NumDrawers, s.DeliverType, sf.SurfaceMaterial
+                    FROM DeskQuote dq
+                    LEFT JOIN Customer c ON
+                        dq.CustomerId = c.CustomerId
+                    LEFT JOIN Desk d ON
+                        d.Desk = dq.Desk
+                    LEFT JOIN Shipping s 0N
+                        d.ShippingId = dq.ShippingId
+                    LEFT JOIN SurfaceMaterial sf ON
+                        sf.SurfaceMaterialid = d.SurfaceMaterialid";
 
-    if (!Request.QueryString["searchCustomerId"].IsEmpty())
-    {
-        selectCommand = "SELECT * FROM DeskQuote WHERE CustomerId = @0";
-        searchTerm = Request.QueryString["searchCustomerId"];
-    }
 
-
-    var selectedData = db.Query(selectCommand, searchTerm);
+    var selectedData = db.Query(selectOrder);
     var grid = new WebGrid(source: selectedData, defaultSort: "CustomerId", rowsPerPage: 5);
 }
 
