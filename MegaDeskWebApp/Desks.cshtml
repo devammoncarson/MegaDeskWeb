@@ -1,6 +1,7 @@
 ﻿@{
     Layout = "~/_Layout.cshtml";
 
+    Page.Title = "MegaDesk Quotes";
     var db = WebMatrix.Data.Database.Open("MegaDeskDB");
     var selectCommand = "SELECT * FROM DeskQuote;";
     var searchTerm = "";
@@ -16,41 +17,6 @@
     var grid = new WebGrid(source: selectedData, defaultSort: "CustomerId", rowsPerPage: 5);
 }
 
-<!DOCTYPE html>
-
-<html>
-<head>
-    <meta name="viewport" content="width=device-width" />
-    <title>MegaDesk Quotes</title>
-    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
-    <style type="text/css">
-        body {
-            font-family: 'Roboto', sans-serif;
-        }
-
-        .grid {
-            margin: 4px;
-            border-collapse: collapse;
-            width: 600px;
-        }
-
-            .grid th, .grid td {
-                border: 1px solid #C0C0C0;
-                padding: 5px;
-            }
-
-        .head {
-            background-color: #E8E8E8;
-            font-weight: bold;
-            color: #FFF;
-        }
-
-        .alt {
-            background-color: #E8E8E8;
-            color: #000;
-        }
-    </style>
-</head>
 <body>
     <h1>My Quotes</h1>
     <form method="get">
@@ -87,7 +53,6 @@
                                 )
     </div>
     <p>
-        <a href="~/AddDesk">Add a desk</a>
+        <a class="navbutton" href="~/addDeskQuote.cshtml">Add a desk</a>
     </p>
 </body>
-</html>
