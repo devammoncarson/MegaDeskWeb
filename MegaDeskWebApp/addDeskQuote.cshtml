@@ -1,4 +1,7 @@
 ﻿@{
+    using Desk;
+
+
     Page.Title = "Add Desk";
     Layout = "~/_Layout.cshtml";
 
@@ -32,8 +35,8 @@
         surfaceMaterial = Convert.ToInt32(Request.Form["surfaceMaterial"]);
         shipping = Convert.ToInt32(Request.Form["shipping"]);
 
-        //Desk desk = new Desk(width, depth, numOfDrawers, surfaceMaterial);
-        //DeskQuote deskQuote = new DeskQuote(desk, rushOrder, customerName, date);
+        Desk desk = new Desk(width, depth, numOfDrawers, surfaceMaterial);
+        DeskQuote deskQuote = new DeskQuote(desk, rushOrder, customerName, date);
 
         total = deskQuote.Quote;
 
