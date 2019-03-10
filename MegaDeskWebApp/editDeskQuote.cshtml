@@ -52,10 +52,10 @@
         surfaceMaterial = Convert.ToInt32(Request.Form["surfaceMaterial"]);
         rushOrder = Convert.ToInt32(Request.Form["rushOrder"]);
 
-        Desk desk = new Desk(width, depth, numOfDrawers, surfaceMaterial);
-        DeskQuote deskQuote = new DeskQuote(desk, rushOrder, customerName, date);
+        //Desk desk = new Desk(width, depth, numOfDrawers, surfaceMaterial);
+        //DeskQuote deskQuote = new DeskQuote(desk, rushOrder, customerName, date);
 
-        quoteAmount = deskQuote.Price;
+        //quoteAmount = deskQuote.Price;
 
         var insertDeskCommand = "INSERT INTO Desk (Width, Depth, NumOfDrawers, SurfaceMaterialId) VALUES(@0, @1, @2, @3)";
         db.Execute(insertDeskCommand, width, depth, numOfDrawers, surfaceMaterial);

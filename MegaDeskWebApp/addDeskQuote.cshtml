@@ -7,7 +7,7 @@
     var shippingData = db.Query("SELECT ShippingDays FROM Shipping");
     var surfaceData = db.Query("SELECT MaterialName FROM SurfaceMaterial");
 
-    decimal quoteAmount = 0;
+    decimal Total = 0;
 
     Validation.RequireField("customerName", "You must enter a name");
     Validation.RequireField("width", "Width is required");
@@ -21,9 +21,7 @@
     decimal depth;
     int numOfDrawers;
     int surfaceMaterial;
-    int rushOrder;
-
-    // need to make a function to get quoteAmount, but don't do it here
+    int shipping;
 
     if (IsPost && Validation.IsValid())
     {
@@ -32,18 +30,18 @@
         depth = Convert.ToDecimal(Request.Form["depth"]);
         numOfDrawers = Convert.ToInt32(Request.Form["numOfDrawers"]);
         surfaceMaterial = Convert.ToInt32(Request.Form["surfaceMaterial"]);
-        rushOrder = Convert.ToInt32(Request.Form["rushOrder"]);
+        shipping = Convert.ToInt32(Request.Form["shipping"]);
 
         //Desk desk = new Desk(width, depth, numOfDrawers, surfaceMaterial);
         //DeskQuote deskQuote = new DeskQuote(desk, rushOrder, customerName, date);
 
-        //quoteAmount = deskQuote.Price;
+        //total = deskQuote.Price;
 
         var insertDeskCommand = "INSERT INTO Desk (Width, Depth, NumOfDrawers, SurfaceMaterialId) VALUES(@0, @1, @2, @3)";
         db.Execute(insertDeskCommand, width, depth, numOfDrawers, surfaceMaterial);
         var insertDeskQuoteCommand = "INSERT INTO DeskQuote (CustomerName, DeskId, ShippingId, Date, QuoteAmount) VALUES(@0, @1, @2, @3, @4)";
         var deskId = db.GetLastInsertId();
-        db.Execute(insertDeskQuoteCommand, customerName, deskId, rushOrder, quoteAmount);
+        db.Execute(insertDeskQuoteCommand, customerName, deskId, shipping, total);
         Response.Redirect("~/Desks");
     }
 
