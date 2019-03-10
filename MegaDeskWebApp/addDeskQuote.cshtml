@@ -35,7 +35,7 @@
         //Desk desk = new Desk(width, depth, numOfDrawers, surfaceMaterial);
         //DeskQuote deskQuote = new DeskQuote(desk, rushOrder, customerName, date);
 
-        //total = deskQuote.Price;
+        total = deskQuote.Quote;
 
         var insertDeskCommand = "INSERT INTO Desk (Width, Depth, NumOfDrawers, SurfaceMaterialId) VALUES(@0, @1, @2, @3)";
         db.Execute(insertDeskCommand, width, depth, numOfDrawers, surfaceMaterial);
