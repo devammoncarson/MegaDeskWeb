@@ -40,7 +40,7 @@
             headerStyle: "head",
             alternatingRowStyle: "alt",
             columns: grid.Columns(
-                grid.Column(format: @<a href="~/EditDesk?id=@item.DeskQuoteId">Edit</a>),
+                grid.Column(format: @<a href="~/editDeskQuote?id=@item.DeskQuoteId">Edit</a>),
         @*grid.Column(format:@<strong>@item.Title</strong>),*@
                         grid.Column("DeskQuoteId"),
                         grid.Column("Date"),
@@ -51,7 +51,7 @@
                         grid.Column("NumOfDrawers"),
                         grid.Column("MaterialName"),
                         grid.Column("ShippingDays"),
-                        grid.Column(format: @<a href="~/DeleteDesk?id=@item.DeskQuoteId">Delete</a>)
+                        grid.Column(format: @<a href="~/deleteDeskQuote?id=@item.DeskQuoteId">Delete</a>)
                                          )
                                 )
     </div>

@@ -1,17 +1,140 @@
 ﻿@{
-    Layout = null;
+
+    Page.Title = "Delete Desk";
+    Layout = "~/_Layout.cshtml";
+
+    var customerName = "";
+    var width = "";
+    var depth = "";
+    var numOfDrawers = "";
+    var surfaceMaterial = "";
+    var shipping = "";
+    var date = "";
+    var quoteAmount = "";
+    int deskId = 0;
+    int deskQuoteId = 0;
+
+    if (!IsPost)
+    {
+        if (!Request.QueryString["Id"].IsEmpty())
+        {
+            deskQuoteId = Convert.ToInt32(Request.QueryString["id"]);
+            var db = WebMatrix.Data.Database.Open("MegaDeskDB2");
+            var dbCommand = @"SELECT dq.DeskQuoteId, dq.Date, c.CustomerName, dq.Total, d.Width, d.Depth, d.NumOfDrawers, sf.MaterialName, s.ShippingDays
+            FROM DeskQuote dq
+            LEFT JOIN Customer c ON
+            dq.CustomerId = c.CustomerId
+            LEFT JOIN Desk d ON
+            d.DeskId = dq.DeskId
+            LEFT JOIN Shipping s ON
+            s.ShippingId = dq.ShippingId
+            LEFT JOIN SurfaceMaterial sf ON
+            sf.MaterialId = dq.MaterialId
+            WHERE dq.DeskQuoteId = @0";
+            var row = db.QuerySingle(dbCommand, deskQuoteId);
+            if (row != null)
+            {
+                deskQuoteId = row.DeskQuoteId;
+                //deskId = row.DeskId;
+                customerName = row.CustomerName;
+                width = row.Width.ToString();
+                depth = row.Depth.ToString();
+                numOfDrawers = row.NumOfDrawers.ToString();
+                surfaceMaterial = row.MaterialName;
+                shipping = row.ShippingDays.ToString();
+                date = row.Date.ToString();
+                quoteAmount = row.Total.ToString();
+            }
+            else
+            {
+                Validation.AddFormError("No desk was found for that Id.");
+            }
+        }
+        else
+        {
+            Validation.AddFormError("No desk was found for that Id.");
+        }
+    }
+    if (IsPost && !Request["deleteButton"].IsEmpty())
+    {
+        deskId = Convert.ToInt32(Request.Form["deskId"]);
+        deskQuoteId = Convert.ToInt32(Request.Form["deskQuoteId"]);
+        var db = WebMatrix.Data.Database.Open("MegaDeskDB2");
+        var deleteCommand = "DELETE FROM Desk WHERE DeskId = @0";
+        var deleteCommand2 = "DELETE FROM DeskQuote WHERE DeskQuoteId = @0";
+
+        db.Execute(deleteCommand2, deskQuoteId);
+        db.Execute(deleteCommand, deskId);
+        Response.Redirect("~/Desks");
+    }
+
 }
 
-<!DOCTYPE html>
 
+<!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
-    <title></title>
+    <title>Delete a Desk</title>
+    <link href="https://fonts.googleapis.com/css?family=News+Cycle" rel="stylesheet">
+    <style type="text/css">
+        p, legend {
+            font-family: 'News Cycle', sans-serif;
+        }
+
+        legend, #deleteButton {
+            color: blue
+        }
+    </style>
 </head>
 <body>
-    <div>
-    
-    </div>
+    <h1>Delete a Desk </h1>
+    <form method="post">
+        <fieldset>
+            <legend>Desk Information:</legend>
+
+            <p>
+                <label for="customerName">Customer Name:</label>
+                <input id="customerName" type="text" name="customerName" value="@customerName" disabled />
+            </p>
+
+            <p>
+                <label for="width">Width:</label>
+                <input id="width" type="text" name="width" value="@width" disabled />
+            </p>
+
+            <p>
+                <label for="depth">Depth:</label>
+                <input id="depth" type="text" name="depth" value="@depth" disabled />
+            </p>
+
+            <p>
+                <label for="numOfDrawers">Number of Drawers:</label>
+                <input id="numOfDrawers" type="text" name="numOfDrawers" value="@numOfDrawers" disabled />
+            </p>
+
+            <p>
+                <label for="surfaceMaterial">Surface Material:</label>
+                <input id="surfaceMaterial" type="text" name="surfaceMaterial" value="@surfaceMaterial" disabled />
+            </p>
+
+            <p>
+                <label for="rushOrder">Rush Order:</label>
+                <input id="shipping" type="text" name="shipping" value="@shipping" disabled />
+            </p>
+
+            <input type="hidden" name="deskId" value="@deskId" />
+            <input type="hidden" name="deskQuoteId" value="@deskQuoteId" />
+
+            <p><input type="submit" name="deleteButton" id="deleteButton" value="Delete Desk" /></p>
+        </fieldset>
+        <p><a href="~/Desks">Return to Desk</a></p>
+    </form>
+
+
+
+
+
 </body>
 </html>
