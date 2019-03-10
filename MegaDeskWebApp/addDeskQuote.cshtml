@@ -85,7 +85,7 @@
                 <option selected disabled>Select a Material</option>
                 @foreach (var row in surfaceData)
                 {
-                    <option selected="@(Request.Form["surfaceMaterial"] == @"row.MaterialId")" value="@row.MaterialId">@row.SurfaceMaterial</option>
+                    <option selected="@(Request.Form["surfaceMaterial"] == @"row.MaterialId")" value="@row.MaterialId">@row.MaterialName</option>
                 }
             </select>
             @Html.ValidationMessage("surfaceMaterial")
@@ -97,7 +97,7 @@
                 <option selected disabled>Select Shipping</option>
                 @foreach (var row in shippingData)
                 {
-                    <option selected=@(Request.Form["rushOrder"] == @"row.ShippingId") value="@row.ShippingId">@row.NumOfDays</option>
+                   // <option selected=@(Request.Form["rushOrder"] == @"row.ShippingId") value="@row.ShippingId">@row.NumOfDays</option>
                 }
             </select>
             @Html.ValidationMessage("rushOrder")

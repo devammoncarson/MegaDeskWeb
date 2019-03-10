@@ -117,6 +117,7 @@
     <Content Include="_Layout.cshtml" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="App_Code\" />
     <Folder Include="app_data\" />
   </ItemGroup>
   <PropertyGroup>
