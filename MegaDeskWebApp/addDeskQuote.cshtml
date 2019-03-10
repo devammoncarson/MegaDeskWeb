@@ -1,16 +1,19 @@
-﻿@{
-    using Desk;
-
+﻿
+@using MegaDesk;
+@{
 
     Page.Title = "Add Desk";
     Layout = "~/_Layout.cshtml";
 
     var db = WebMatrix.Data.Database.Open("MegaDeskDB2");
 
-    var shippingData = db.Query("SELECT ShippingDays FROM Shipping");
-    var surfaceData = db.Query("SELECT MaterialName FROM SurfaceMaterial");
+    IEnumerable<dynamic> allMaterials;
+    allMaterials = db.Query("SELECT MaterialName FROM SurfaceMaterial");
 
-    decimal Total = 0;
+    IEnumerable<dynamic> allShippingDays;
+    allShippingDays = db.Query("SELECT ShippingDays FROM Shipping");
+
+    decimal total = 0;
 
     Validation.RequireField("customerName", "You must enter a name");
     Validation.RequireField("width", "Width is required");
@@ -25,9 +28,11 @@
     int numOfDrawers;
     int surfaceMaterial;
     int shipping;
+    DateTime date = DateTime.Now;
 
     if (IsPost && Validation.IsValid())
     {
+
         customerName = Request.Form["customerName"];
         width = Convert.ToDecimal(Request.Form["width"]);
         depth = Convert.ToDecimal(Request.Form["depth"]);
@@ -35,8 +40,8 @@
         surfaceMaterial = Convert.ToInt32(Request.Form["surfaceMaterial"]);
         shipping = Convert.ToInt32(Request.Form["shipping"]);
 
-        Desk desk = new Desk(width, depth, numOfDrawers, surfaceMaterial);
-        DeskQuote deskQuote = new DeskQuote(desk, rushOrder, customerName, date);
+        Desk desk = new Desk();
+        DeskQuote deskQuote = new DeskQuote();
 
         total = deskQuote.Quote;
 
@@ -63,42 +68,43 @@
         </p>
 
         <p>
-            <label for="width">Width:(num)</label>
+            <label for="width">Width: </label>
             <input id="width" type="text" name="width" value="@Request.Form["width"]" />
             @Html.ValidationMessage("width")
         </p>
 
         <p>
-            <label for="depth">Depth:(num)</label>
+            <label for="depth">Depth: </label>
             <input id="depth" type="text" name="depth" value="@Request.Form["depth"]" />
             @Html.ValidationMessage("depth")
         </p>
 
         <p>
-            <label for="numOfDrawers">Number Of Drawers:(num)</label>
+            <label for="numOfDrawers">Number Of Drawers:</label>
             <input id="numOfDrawers" type="text" name="numOfDrawers" value="@Request.Form["numOfDrawers"]" />
             @Html.ValidationMessage("numOfDrawers")
         </p>
 
         <p>
             <label for="surfaceMaterial">Surface Material:</label>
-            <select id="surfaceMaterial" type="text" name="surfaceMaterial">
-                <option selected disabled>Select a Material</option>
-                @foreach (var row in surfaceData)
+            <select>
+                <option disabled selected>Select Material</option>
+                @foreach(var m in allMaterials)
                 {
-                    <option selected="@(Request.Form["surfaceMaterial"] == @"row.MaterialId")" value="@row.MaterialId">@row.MaterialName</option>
+                    <option title='@m.MaterialName' value="m.MaterialId">@m.MaterialName</option>
                 }
-            </select>
+
+             </select>    
             @Html.ValidationMessage("surfaceMaterial")
         </p>
 
         <p>
-            <label for="rushOrder">Rush Order:(num)</label>
+            <label for="rushOrder">Rush Order: </label>
             <select id="rushOrder" name="rushOrder">
-                <option selected disabled>Select Shipping</option>
-                @foreach (var row in shippingData)
+                <option disabled selected>Select Shipping</option>
+                @foreach (var m in allShippingDays)
                 {
-                   // <option selected=@(Request.Form["rushOrder"] == @"row.ShippingId") value="@row.ShippingId">@row.NumOfDays</option>
+                    <option title='@m.ShippingDays' value="m.ShippingId">@m.ShippingDays</option>
                 }
             </select>
             @Html.ValidationMessage("rushOrder")
@@ -106,6 +112,6 @@
 
         <p><input type="submit" name="buttonSubmit" value="Add Desk" /></p>
 
-        <p><label>Quote: $</label>@quoteAmount</p>
+        <p><label>Quote: $</label>@total</p>
     </fieldset>
 </form>
