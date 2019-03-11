@@ -13,19 +13,14 @@ namespace MegaDesk
         public string CustomerName { get; set; }
         public int NumShippingDays { get; set; }
         public DateTime QuoteDate { get; set; }
-        public decimal Quote { get; set; }
+        public decimal Total { get; set; }
         public Desk Desk { get; set; }
 
-         public DeskQuote(Desk desk, int time, string name, DateTime date)
+        public DeskQuote()
         {
-            Desk = desk;
-            Shipping = time;
-            Customer = name;
-            Date = date;
-            Price = GetQuote(desk, time);
         }
 
-        public decimal GetQuote(Desk desk, int time)
+        public decimal GetQuote(Desk desk, int NumShippingDays)
         {
             decimal totalQuote = BASE_DESK_PRICE;
             decimal surfaceArea = desk.Width * desk.Depth;
@@ -35,33 +30,33 @@ namespace MegaDesk
                 totalQuote += (surfaceArea - 1000);
             }
 
-            if (desk.Drawers != 0)
+            if (desk.NumDrawers!= 0)
             {
-                totalQuote += (desk.Drawers * 50);
+                totalQuote += (desk.NumDrawers * 50);
             }
 
-            var db = WebMatrix.Data.Database.Open("MegaDeskWeb");
+            var db = WebMatrix.Data.Database.Open("MegaDeskDB2");
 
-            var surfaceQuery = db.Query("SELECT Cost FROM SurfaceMaterial WHERE MaterialId = @0", desk.MaterialId);
+            var surfaceQuery = db.Query("SELECT MaterialCost FROM SurfaceMaterial WHERE MaterialId = @0", desk.MaterialId);
             foreach (var row in surfaceQuery)
             {
-                totalQuote += row.Cost;
+                totalQuote += row.MaterialCost;
             }
 
-            var shippingQuery = db.Query("SELECT * FROM Shipping WHERE ShippingId = @0", time);
+            var shippingQuery = db.Query("SELECT * FROM Shipping WHERE ShippingId = @0", NumShippingDays);
             foreach (var row in shippingQuery)
             {
                 if (surfaceArea < 1000)
                 {
-                    totalQuote += row.CostLess1000;
+                    totalQuote += row.LessThan1000;
                 }
                 else if (surfaceArea > 2000)
                 {
-                    totalQuote += row.CostGreater2000;
+                    totalQuote += row.MoreThan2000;
                 }
                 else
                 {
-                    totalQuote += row.Cost1000to2000;
+                    totalQuote += row.LessThan2000;
                 }
             }            
             return totalQuote;
