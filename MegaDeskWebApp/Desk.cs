@@ -10,17 +10,6 @@ namespace MegaDesk
         public decimal Width { get; set; }
         public decimal Depth { get; set; }
         public int NumDrawers { get; set; }
-
-        public enum DesktopMaterial
-        {
-            Rosewood,
-            Laminate,
-            Veneer,
-            Oak,
-            Pine,
-        }
-
-        public DesktopMaterial Material { get; set; }
-
+        public int MaterialId { get; set; }
     }
 }

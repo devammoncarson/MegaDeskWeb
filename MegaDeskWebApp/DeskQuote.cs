@@ -8,126 +8,61 @@ namespace MegaDesk
 {
     public class DeskQuote
     {
-        //Constructor for rushOrder array calculation
-        public DeskQuote()
-        {
-            this.RushOrder = getRushOrder();
-        }
-
-        public int[,] RushOrder { get; set; }
+        const decimal BASE_DESK_PRICE = 200.00M;
 
         public string CustomerName { get; set; }
         public int NumShippingDays { get; set; }
         public DateTime QuoteDate { get; set; }
-        public decimal Quote { get; set; }
-        public decimal ShippingCost { get; set; }
-        public decimal StructureCost { get; set; }
-        public decimal SurfaceCost { get; set; }
+        public decimal Total { get; set; }
         public Desk Desk { get; set; }
 
-        public decimal GetQuote()
+        public DeskQuote()
         {
-            Quote = GetShippingCost() + GetStructureCost() + GetSurfaceCost();
-            return Quote;
         }
 
-        //**GET CURRENT PRICES BASED ON .txt**//
-        public int[,] getRushOrder()
+        public decimal GetQuote(Desk desk, int NumShippingDays)
         {
+            decimal totalQuote = BASE_DESK_PRICE;
+            decimal surfaceArea = desk.Width * desk.Depth;
 
-            string[] rushAmount = File.ReadAllLines(@"rushOrderPrices.txt");
-            int[,] rushAmountGrid = new int[3, 3];
-            int row;
-            int column;
-            int count = 0;
-
-            for (row = 0; row < 3; row++)
+            if (surfaceArea > 1000)
             {
-                for (column = 0; column < 3; column++)
+                totalQuote += (surfaceArea - 1000);
+            }
+
+            if (desk.NumDrawers!= 0)
+            {
+                totalQuote += (desk.NumDrawers * 50);
+            }
+
+            var db = WebMatrix.Data.Database.Open("MegaDeskDB2");
+
+            var surfaceQuery = db.Query("SELECT MaterialCost FROM SurfaceMaterial WHERE MaterialId = @0", desk.MaterialId);
+            foreach (var row in surfaceQuery)
+            {
+                totalQuote += row.MaterialCost;
+            }
+
+            var shippingQuery = db.Query("SELECT * FROM Shipping WHERE ShippingId = @0", NumShippingDays);
+            foreach (var row in shippingQuery)
+            {
+                if (surfaceArea < 1000)
                 {
-                    rushAmountGrid[row, column] = int.Parse(rushAmount[count]);
-                    count++;
+                    totalQuote += row.LessThan1000;
                 }
-            }
-            return rushAmountGrid;
-        }
-
-        public decimal GetShippingCost()
-        {
-            decimal size = Desk.Width * Desk.Depth;
-            switch (NumShippingDays)
-            {
-                case 3:
-                    if (size < 1000)
-                        ShippingCost = this.RushOrder[0, 0];
-                    if (size > 1000 && size < 2000)
-                        ShippingCost = this.RushOrder[0, 1];
-                    else if (size > 2000)
-                        ShippingCost = this.RushOrder[0, 2];
-                    break;
-                case 5:
-                    if (size < 1000)
-                        ShippingCost = this.RushOrder[1, 0];
-                    if (size > 1000 && size < 2000)
-                        ShippingCost = this.RushOrder[1, 1];
-                    else if (size > 2000)
-                        ShippingCost = this.RushOrder[1, 2];
-                    break;
-                case 7:
-                    if (size < 1000)
-                        ShippingCost = this.RushOrder[2, 0];
-                    if (size > 1000 && size < 2000)
-                        ShippingCost = this.RushOrder[2, 1];
-                    else if (size > 2000)
-                        ShippingCost = this.RushOrder[2, 2];
-                    break;
-                case 14:
-                    ShippingCost = 0;
-                    break;
-                default:
-                    break;
-            }
-
-            return ShippingCost;
-        }
-
-        public decimal GetStructureCost()
-        {
-            StructureCost = (Desk.NumDrawers * 50) + 200;
-            return StructureCost;
-        }
-
-        public decimal GetSurfaceCost()
-        {
-            decimal size = Desk.Width * Desk.Depth;
-
-            switch (Desk.Material)
-            {
-                case Desk.DesktopMaterial.Rosewood:
-                    SurfaceCost = 300;
-                    break;
-                case Desk.DesktopMaterial.Laminate:
-                    SurfaceCost = 100;
-                    break;
-                case Desk.DesktopMaterial.Veneer:
-                    SurfaceCost = 125;
-                    break;
-                case Desk.DesktopMaterial.Oak:
-                    SurfaceCost = 200;
-                    break;
-                case Desk.DesktopMaterial.Pine:
-                    SurfaceCost = 50;
-                    break;
-                default:
-                    break;
-            }
-
-            if (size > 1000)
-                SurfaceCost += size;
-            else
-                SurfaceCost += 0;
-
-            return SurfaceCost;
+                else if (surfaceArea > 2000)
+                {
+                    totalQuote += row.MoreThan2000;
+                }
+                else
+                {
+                    totalQuote += row.LessThan2000;
+                }
+            }            
+            return totalQuote;
         }
     }
+
+
+        
 }

@@ -43,12 +43,14 @@
         Desk desk = new Desk();
         DeskQuote deskQuote = new DeskQuote();
          
-        total = deskQuote.Quote;
+        total = deskQuote.Total;
 
-        var insertDeskCommand = "INSERT INTO Desk (Width, Depth, NumOfDrawers, SurfaceMaterialId) VALUES(@0, @1, @2, @3)";
+        var insertDeskCommand = "INSERT INTO Desk (Width, Depth, NumOfDrawers, MaterialId) VALUES(@0, @1, @2, @3)";
         db.Execute(insertDeskCommand, width, depth, numOfDrawers, surfaceMaterial);
-        var insertDeskQuoteCommand = "INSERT INTO DeskQuote (CustomerName, DeskId, ShippingId, Date, QuoteAmount) VALUES(@0, @1, @2, @3, @4)";
+
+        var insertDeskQuoteCommand = "INSERT INTO DeskQuote (CustomerId, DeskId, ShippingId, Date, Total) VALUES(@0, @1, @2, @3, @4)";
         var deskId = db.GetLastInsertId();
+
         db.Execute(insertDeskQuoteCommand, customerName, deskId, shipping, total);
         Response.Redirect("~/Desks");
     }
@@ -112,6 +114,6 @@
 
         <p><input type="submit" name="buttonSubmit" value="Add Desk" /></p>
 
-        <p><label>Quote: $</label>@total</p>
+        <p><label>Quote: $</label>@Total</p>
     </fieldset>
 </form>
