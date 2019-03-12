@@ -1,4 +1,4 @@
-﻿
+﻿@using MegaDesk;
 @{
     Page.Title = "Edit Desk Quote";
     Layout = "~/_Layout.cshtml";
@@ -51,10 +51,10 @@
         surfaceMaterial = Convert.ToInt32(Request.Form["surfaceMaterial"]);
         shipping = Convert.ToInt32(Request.Form["shipping"]);
 
-        //Desk desk = new Desk(width, depth, numOfDrawers, surfaceMaterial);
-        //DeskQuote deskQuote = new DeskQuote(desk, rushOrder, customerName, date);
+        Desk desk = new Desk();
+        DeskQuote deskQuote = new DeskQuote();
 
-        //total = deskQuote.Quote;
+        total = deskQuote.Total;
 
         var insertDeskCommand = "INSERT INTO Desk (Width, Depth, NumOfDrawers, SurfaceMaterialId) VALUES(@0, @1, @2, @3)";
         db.Execute(insertDeskCommand, width, depth, numOfDrawers, surfaceMaterial);

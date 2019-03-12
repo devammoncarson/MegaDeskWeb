@@ -32,23 +32,21 @@
 
     if (IsPost && Validation.IsValid())
     {
-
+        Desk desk = new Desk();
+        DeskQuote deskQuote = new DeskQuote();
+         
         customerName = Request.Form["customerName"];
         width = Convert.ToDecimal(Request.Form["width"]);
         depth = Convert.ToDecimal(Request.Form["depth"]);
         numOfDrawers = Convert.ToInt32(Request.Form["numOfDrawers"]);
         surfaceMaterial = Convert.ToInt32(Request.Form["surfaceMaterial"]);
         shipping = Convert.ToInt32(Request.Form["shipping"]);
-
-        Desk desk = new Desk();
-        DeskQuote deskQuote = new DeskQuote();
-         
         total = deskQuote.Total;
 
         var insertDeskCommand = "INSERT INTO Desk (Width, Depth, NumOfDrawers, MaterialId) VALUES(@0, @1, @2, @3)";
         db.Execute(insertDeskCommand, width, depth, numOfDrawers, surfaceMaterial);
 
-        var insertDeskQuoteCommand = "INSERT INTO DeskQuote (CustomerId, DeskId, ShippingId, Date, Total) VALUES(@0, @1, @2, @3, @4)";
+        var insertDeskQuoteCommand = "INSERT INTO DeskQuote (CustomerId, DeskId, ShippingId, Date, total) VALUES(@0, @1, @2, @3, @4)";
         var deskId = db.GetLastInsertId();
 
         db.Execute(insertDeskQuoteCommand, customerName, deskId, shipping, total);
@@ -90,20 +88,20 @@
         <p>
             <label for="surfaceMaterial">Surface Material:</label>
             <select>
-                <option disabled selected>Select Material</option>
-                @foreach(var m in allMaterials)
+                @*<option disabled selected>Select Material</option>*@
+                @foreach (var m in allMaterials)
                 {
                     <option title='@m.MaterialName' value="m.MaterialId">@m.MaterialName</option>
                 }
 
-             </select>    
+            </select>
             @Html.ValidationMessage("surfaceMaterial")
         </p>
 
         <p>
             <label for="rushOrder">Rush Order: </label>
             <select id="rushOrder" name="rushOrder">
-                <option disabled selected>Select Shipping</option>
+                @*<option disabled selected>Select Shipping</option>*@
                 @foreach (var m in allShippingDays)
                 {
                     <option title='@m.ShippingDays' value="m.ShippingId">@m.ShippingDays</option>
@@ -114,6 +112,7 @@
 
         <p><input type="submit" name="buttonSubmit" value="Add Desk" /></p>
 
-        <p><label>Quote: $</label>@Total</p>
+        <p><label>Quote: $</label>@total</p>
     </fieldset>
+    <p><a href="~/Desks">Return to Desk</a></p>
 </form>
