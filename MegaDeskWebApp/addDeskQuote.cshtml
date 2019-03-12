@@ -88,7 +88,7 @@
         <p>
             <label for="surfaceMaterial">Surface Material:</label>
             <select>
-                @*<option disabled selected>Select Material</option>*@
+                <option disabled selected>Select Material</option>
                 @foreach (var m in allMaterials)
                 {
                     <option title='@m.MaterialName' value="m.MaterialId">@m.MaterialName</option>
@@ -101,7 +101,7 @@
         <p>
             <label for="rushOrder">Rush Order: </label>
             <select id="rushOrder" name="rushOrder">
-                @*<option disabled selected>Select Shipping</option>*@
+                <option disabled selected>Select Shipping</option>
                 @foreach (var m in allShippingDays)
                 {
                     <option title='@m.ShippingDays' value="m.ShippingId">@m.ShippingDays</option>
