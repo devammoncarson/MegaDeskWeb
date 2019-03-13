@@ -33,14 +33,8 @@
     int shipping;
     DateTime date = DateTime.Now;
 
-
-
     if (IsPost && Validation.IsValid())
     {
-        //// DEBUG:
-        //Response.Write(Request.Form);
-        //return;
-
         customerName = Request.Form["customerName"];
         width = Convert.ToDecimal(Request.Form["width"]);
         depth = Convert.ToDecimal(Request.Form["depth"]);
@@ -62,7 +56,6 @@
         db.Execute(insertDeskQuoteCommand, customerName, DateTime.Now, deskId, surfaceMaterial, shipping, total);
         Response.Redirect("~/Desks");
     }
-
 
 }
 <h2>Add a Desk</h2>

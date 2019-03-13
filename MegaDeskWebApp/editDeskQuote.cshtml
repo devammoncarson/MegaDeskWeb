@@ -3,10 +3,16 @@
     Page.Title = "Edit Desk Quote";
     Layout = "~/_Layout.cshtml";
 
-    var db = WebMatrix.Data.Database.Open("MegaDeskDB2");
+    var db1 = WebMatrix.Data.Database.Open("MegaDeskDB2");
 
-    var shippingData = db.Query("SELECT * FROM Shipping");
-    var surfaceData = db.Query("SELECT * FROM SurfaceMaterial");
+    IEnumerable<dynamic> allMaterials;
+    allMaterials = db1.Query("SELECT MaterialId, MaterialName FROM SurfaceMaterial");
+
+    IEnumerable<dynamic> allShippingDays;
+    allShippingDays = db1.Query("SELECT ShippingId, ShippingDays FROM Shipping");
+
+    IEnumerable<dynamic> allCustomer;
+    allCustomer = db1.Query("SELECT CustomerId, CustomerName FROM Customer");
 
     decimal total = 0;
 
@@ -15,53 +21,83 @@
     Validation.RequireField("depth", "Depth is required");
     Validation.RequireField("numOfDrawers", "You haven't entered the number of drawers");
     Validation.RequireField("surfaceMaterial", "You haven't entered a material");
-    Validation.RequireField("shipping", "You haven't entered a rush order time");
+    Validation.RequireField("shipping", "You haven't entered a shipping time");
 
     var customerName = "";
-    var width = 0;
-    var depth = 0;
-    var numOfDrawers = 0;
-    var surfaceMaterial = 0;
-    var shipping = 0;
-    var surfaceMaterialName = "";
-    var shippingDays = "";
-    var date = System.DateTime.Now;
+    var customerId = 0;
+    var width = "";
+    var depth = "";
+    var numOfDrawers = "";
+    var surfaceMaterial = "";
+    var shipping = "";
+    var date = "";
+    var quoteAmount = "";
+    int deskId = 0;
+    int deskQuoteId = 0;
 
     if (!IsPost)
     {
-        var deskQuoteData = db.QuerySingle("SELECT * FROM DeskQuote WHERE DeskQuoteId = @0", Request.QueryString["id"]);
-
-        customerName = deskQuoteData.CustomerName;
-        width = deskQuoteData.Width;
-        depth = deskQuoteData.Depth;
-        numOfDrawers = deskQuoteData.NumOfDrawers;
-        surfaceMaterial = deskQuoteData.MaterialId;
-        shipping = deskQuoteData.ShippingId;
-        surfaceMaterialName = db.QuerySingle("SELECT MaterialName FROM SurfaceMaterials WHERE MaterialId = @0", surfaceMaterial).SurfaceMaterial;
-        shippingDays = db.QuerySingle("SELECT ShippingDays FROM Shipping WHERE ShippingId = @0", shipping).ShippingDays;
-        date = deskQuoteData.Date;
+        if (!Request.QueryString["Id"].IsEmpty())
+        {
+            deskQuoteId = Convert.ToInt32(Request.QueryString["id"]);
+            var db = WebMatrix.Data.Database.Open("MegaDeskDB2");
+            var dbCommand = @"SELECT dq.DeskQuoteId, dq.Date, c.customerId, dq.deskId, c.CustomerName, dq.Total, d.Width, d.Depth, d.NumOfDrawers, sf.MaterialName, s.ShippingDays
+            FROM DeskQuote dq
+            LEFT JOIN Customer c ON
+            dq.CustomerId = c.CustomerId
+            LEFT JOIN Desk d ON
+            d.DeskId = dq.DeskId
+            LEFT JOIN Shipping s ON
+            s.ShippingId = dq.ShippingId
+            LEFT JOIN SurfaceMaterial sf ON
+            sf.MaterialId = dq.MaterialId
+            WHERE dq.DeskQuoteId = @0";
+            var row = db.QuerySingle(dbCommand, deskQuoteId);
+            if (row != null)
+            {
+                deskQuoteId = row.DeskQuoteId;
+                deskId = row.DeskId;
+                customerName = row.CustomerName;
+                customerId = row.CustomerId;
+                width = row.Width.ToString();
+                depth = row.Depth.ToString();
+                numOfDrawers = row.NumOfDrawers.ToString();
+                surfaceMaterial = row.MaterialName;
+                shipping = row.ShippingDays.ToString();
+                date = row.Date.ToString();
+                quoteAmount = row.Total.ToString();
+            }
+            else
+            {
+                Validation.AddFormError("No desk was found for that Id.");
+            }
+        }
+        else
+        {
+            Validation.AddFormError("No desk was found for that Id.");
+        }
     }
 
     if (IsPost && Validation.IsValid())
     {
-        customerName = Request.Form["customerName"];
-        width = Convert.ToInt32(Request.Form["width"]);
-        depth = Convert.ToInt32(Request.Form["depth"]);
-        numOfDrawers = Convert.ToInt32(Request.Form["numOfDrawers"]);
-        surfaceMaterial = Convert.ToInt32(Request.Form["surfaceMaterial"]);
-        shipping = Convert.ToInt32(Request.Form["shipping"]);
+        var customerName2 = Request.Form["customerName"];
+        var width2 = Convert.ToDecimal(Request.Form["width"]);
+        var depth2 = Convert.ToDecimal(Request.Form["depth"]);
+        var numOfDrawers2 = Convert.ToInt32(Request.Form["numOfDrawers"]);
+        var surfaceMaterial2 = Convert.ToInt32(Request.Form["surfaceMaterial"]);
+        var shipping2 = Convert.ToInt32(Request.Form["shipping"]);
 
-        // decimal width, decimal depth, int numDrawers, int materialId
-        Desk desk = new Desk(width, depth, numOfDrawers, surfaceMaterial);
+        Desk desk = new Desk(width2, depth2, numOfDrawers2, surfaceMaterial2);
         DeskQuote deskQuote = new DeskQuote();
 
-        total = deskQuote.Total;
+        total = deskQuote.GetQuote(desk, shipping2);
 
-        var insertDeskCommand = "INSERT INTO Desk (Width, Depth, NumOfDrawers, SurfaceMaterialId) VALUES(@0, @1, @2, @3)";
-        db.Execute(insertDeskCommand, width, depth, numOfDrawers, surfaceMaterial);
-        var insertDeskQuoteCommand = "INSERT INTO DeskQuote (CustomerName, DeskId, ShippingId, Date, QuoteAmount) VALUES(@0, @1, @2, @3, @4)";
-        var deskId = db.GetLastInsertId();
-        db.Execute(insertDeskQuoteCommand, customerName, deskId, shipping, date, total);
+        var insertDeskCommand = "UPDATE Desk SET (Depth, Width, NumOfDrawers, MaterialId) WHERE Desk=@0 VALUES(@0, @1, @2, @3, @4)";
+        db1.Execute(insertDeskCommand, deskId, depth2, width2, numOfDrawers2, surfaceMaterial2);
+
+        var insertDeskQuoteCommand = "UPDATE DeskQuote SET (CustomerId, Date, DeskId, MaterialId, ShippingId, Total) WHERE Desk=@0 VALUES(@0, @1, @2, @3, @4, @5)";
+        db1.Execute(insertDeskQuoteCommand, customerName2, DateTime.Now, deskId, surfaceMaterial2, shipping2, total);
+
         Response.Redirect("~/Desks");
     }
 
@@ -75,54 +111,63 @@
         <legend>Desk Information</legend>
         <p>
             <label for="customerName">Customer Name:</label>
-            <input id="customerName" type="text" name="customerName" value="@customerName" />
+            <select id="customerName" name="customerName">
+                <option disabled selected>Select Material</option>
+                @foreach (var m in allCustomer)
+                {
+                    <option title='@m.CustomerName' value="@m.CustomerId">@m.CustomerName</option>
+                }
+
+            </select>
             @Html.ValidationMessage("customerName")
         </p>
 
         <p>
-            <label for="width">Width:(num)</label>
+            <label for="width">Width: </label>
             <input id="width" type="text" name="width" value="@width" />
             @Html.ValidationMessage("width")
         </p>
 
         <p>
-            <label for="depth">Depth:(num)</label>
+            <label for="depth">Depth: </label>
             <input id="depth" type="text" name="depth" value="@depth" />
             @Html.ValidationMessage("depth")
         </p>
 
         <p>
-            <label for="numOfDrawers">Number Of Drawers:(num)</label>
+            <label for="numOfDrawers">Number Of Drawers:</label>
             <input id="numOfDrawers" type="text" name="numOfDrawers" value="@numOfDrawers" />
             @Html.ValidationMessage("numOfDrawers")
         </p>
 
         <p>
             <label for="surfaceMaterial">Surface Material:</label>
-            <select id="surfaceMaterial" type="text" name="surfaceMaterial">
-                <option selected disabled>Select a Material</option>
-                @foreach (var row in surfaceData)
+            <select id="surfaceMaterial" name="surfaceMaterial">
+                <option disabled selected>Select Material</option>
+                @foreach (var m in allMaterials)
                 {
-                    <option value="@row.MaterialId">@row.MaterialName</option>
+                    <option title='@m.MaterialName' value="@m.MaterialId">@m.MaterialName</option>
                 }
+
             </select>
             @Html.ValidationMessage("surfaceMaterial")
         </p>
 
         <p>
-            <label for="rushOrder">Rush Order:(num)</label>
-            <select id="rushOrder" name="rushOrder">
-                <option selected disabled>Select Shipping</option>
-                @foreach (var row in shippingData)
+            <label for="shipping">Rush Order: </label>
+            <select id="shipping" name="shipping">
+                <option disabled selected>Select Shipping</option>
+                @foreach (var m in allShippingDays)
                 {
-                    <option value="@row.ShippingId">@row.ShippingDays</option>
+                    <option title='@m.ShippingDays' value="@m.ShippingId">@m.ShippingDays</option>
                 }
             </select>
             @Html.ValidationMessage("shipping")
         </p>
 
-        <p><input type="submit" name="buttonSubmit" value="Add Desk" /></p>
+        <p><input type="submit" name="buttonSubmit" value="Edit Desk" /></p>
 
         <p><label>Quote: $</label>@total</p>
     </fieldset>
+    <p><a href="~/Desks">Return to Desk</a></p>
 </form>
