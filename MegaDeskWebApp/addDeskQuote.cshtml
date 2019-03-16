@@ -67,7 +67,7 @@
         <p>
             <label for="customerName">Customer Name:</label>
             <select id="customerName" name="customerName">
-                <option disabled selected>Select Material</option>
+                <option disabled selected>Select Customer</option>
                 @foreach (var m in allCustomer)
                 {
                     <option title='@m.CustomerName' value="@m.CustomerId">@m.CustomerName</option>

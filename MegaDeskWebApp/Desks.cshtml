@@ -3,7 +3,26 @@
 
     Page.Title = "MegaDesk Quotes";
     var db = WebMatrix.Data.Database.Open("MegaDeskDB2");
-    var selectOrder = @"SELECT dq.DeskQuoteId, dq.Date, c.CustomerName, dq.Total, d.Width, d.Depth, d.NumOfDrawers, sf.MaterialName, s.ShippingDays
+
+    var selectOrder = "";
+    var searchTerm = "";
+    if (!Request.QueryString["searchCustomerName"].IsEmpty())
+    {
+        selectOrder = @"SELECT dq.DeskQuoteId, dq.Date, c.CustomerName, dq.Total, d.Width, d.Depth, d.NumOfDrawers, sf.MaterialName, s.ShippingDays
+        FROM DeskQuote dq
+        LEFT JOIN Customer c ON
+            dq.CustomerId = c.CustomerId
+        LEFT JOIN Desk d ON
+            d.DeskId = dq.DeskId
+        LEFT JOIN Shipping s ON
+            s.ShippingId = dq.ShippingId
+        LEFT JOIN SurfaceMaterial sf ON
+            sf.MaterialId = dq.MaterialId
+        WHERE c.CustomerName = @0";
+        searchTerm = Request.QueryString["searchCustomerName"];
+    } else
+    {
+        selectOrder = @"SELECT dq.DeskQuoteId, dq.Date, c.CustomerName, dq.Total, d.Width, d.Depth, d.NumOfDrawers, sf.MaterialName, s.ShippingDays
         FROM DeskQuote dq
         LEFT JOIN Customer c ON
             dq.CustomerId = c.CustomerId
@@ -13,20 +32,21 @@
             s.ShippingId = dq.ShippingId
         LEFT JOIN SurfaceMaterial sf ON
             sf.MaterialId = dq.MaterialId";
+        searchTerm = "";
+    }
 
-
-    var selectedData = db.Query(selectOrder);
-    var grid = new WebGrid(source: selectedData, defaultSort: "DeskQuoteId", rowsPerPage: 5);
+    var selectedData = db.Query(selectOrder, searchTerm);
+    var grid = new WebGrid(source: selectedData, defaultSort: "CustomerName", rowsPerPage: 5);
 }
 
 <body>
     <h1>My Quotes</h1>
     <form method="get">
         <div>
-            <label for="searchCustomerName">Customer Name to look for:</label>
+            <label for="searchCustomerName">Search by Customer Name:</label>
             <input id="searchCustomerName" type="text" name="searchCustomerName" value="@Request.QueryString["searchCustomerName"]" />
             @*<input type="hidden" name="searchKeyword" value=""/>*@
-            <input type="Submit" value="Search Customer Name" /><br />
+            <input type="Submit" value="Search" /><br />
         </div>
     </form>
     <form>

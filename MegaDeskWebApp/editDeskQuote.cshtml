@@ -81,6 +81,7 @@
     if (IsPost && Validation.IsValid())
     {
         var customerName2 = Request.Form["customerName"];
+        var deskId2 = Request.Form["deskId"];
         var width2 = Convert.ToDecimal(Request.Form["width"]);
         var depth2 = Convert.ToDecimal(Request.Form["depth"]);
         var numOfDrawers2 = Convert.ToInt32(Request.Form["numOfDrawers"]);
@@ -92,10 +93,10 @@
 
         total = deskQuote.GetQuote(desk, shipping2);
 
-        var insertDeskCommand = "UPDATE Desk SET (Depth, Width, NumOfDrawers, MaterialId) WHERE Desk=@0 VALUES(@0, @1, @2, @3, @4)";
+        var insertDeskCommand = "UPDATE Desk SET (Depth=@0, Width=@1, NumOfDrawers=@2, MaterialId=@3) WHERE Desk=@4)";
         db1.Execute(insertDeskCommand, depth2, width2, numOfDrawers2, surfaceMaterial2, deskId);
 
-        var insertDeskQuoteCommand = "UPDATE DeskQuote SET (CustomerId, Date, DeskId, MaterialId, ShippingId, Total) WHERE DeskQuoteId=@0 VALUES(@0, @1, @2, @3, @4, @5, @6)";
+        var insertDeskQuoteCommand = "UPDATE DeskQuote SET (CustomerId, Date, DeskId, MaterialId, ShippingId, Total) WHERE DeskQuoteId=@6 VALUES(@0, @1, @2, @3, @4, @5, @6)";
         db1.Execute(insertDeskQuoteCommand, customerName2, DateTime.Now, deskId, surfaceMaterial2, shipping2, total, deskQuoteId);
 
         Response.Redirect("~/Desks");
@@ -164,6 +165,8 @@
             </select>
             @Html.ValidationMessage("shipping")
         </p>
+
+        <p value="@deskId" >Desk ID: @deskId</p>
 
         <p><input type="submit" name="buttonSubmit" value="Edit Desk" /></p>
 
