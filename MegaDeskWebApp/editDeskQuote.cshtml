@@ -93,10 +93,10 @@
         total = deskQuote.GetQuote(desk, shipping2);
 
         var insertDeskCommand = "UPDATE Desk SET (Depth, Width, NumOfDrawers, MaterialId) WHERE Desk=@0 VALUES(@0, @1, @2, @3, @4)";
-        db1.Execute(insertDeskCommand, deskId, depth2, width2, numOfDrawers2, surfaceMaterial2);
+        db1.Execute(insertDeskCommand, depth2, width2, numOfDrawers2, surfaceMaterial2, deskId);
 
-        var insertDeskQuoteCommand = "UPDATE DeskQuote SET (CustomerId, Date, DeskId, MaterialId, ShippingId, Total) WHERE Desk=@0 VALUES(@0, @1, @2, @3, @4, @5)";
-        db1.Execute(insertDeskQuoteCommand, customerName2, DateTime.Now, deskId, surfaceMaterial2, shipping2, total);
+        var insertDeskQuoteCommand = "UPDATE DeskQuote SET (CustomerId, Date, DeskId, MaterialId, ShippingId, Total) WHERE DeskQuoteId=@0 VALUES(@0, @1, @2, @3, @4, @5, @6)";
+        db1.Execute(insertDeskQuoteCommand, customerName2, DateTime.Now, deskId, surfaceMaterial2, shipping2, total, deskQuoteId);
 
         Response.Redirect("~/Desks");
     }
