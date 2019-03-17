@@ -8,10 +8,13 @@
     var db = WebMatrix.Data.Database.Open("MegaDeskDB2");
 
     IEnumerable<dynamic> allMaterials;
-    allMaterials = db.Query("SELECT MaterialName FROM SurfaceMaterial");
+    allMaterials = db.Query("SELECT MaterialId, MaterialName FROM SurfaceMaterial");
 
     IEnumerable<dynamic> allShippingDays;
-    allShippingDays = db.Query("SELECT ShippingDays FROM Shipping");
+    allShippingDays = db.Query("SELECT ShippingId, ShippingDays FROM Shipping");
+
+    IEnumerable<dynamic> allCustomer;
+    allCustomer = db.Query("SELECT CustomerId, CustomerName FROM Customer");
 
     decimal total = 0;
 
@@ -32,27 +35,27 @@
 
     if (IsPost && Validation.IsValid())
     {
-        Desk desk = new Desk();
-        DeskQuote deskQuote = new DeskQuote();
-         
         customerName = Request.Form["customerName"];
         width = Convert.ToDecimal(Request.Form["width"]);
         depth = Convert.ToDecimal(Request.Form["depth"]);
         numOfDrawers = Convert.ToInt32(Request.Form["numOfDrawers"]);
         surfaceMaterial = Convert.ToInt32(Request.Form["surfaceMaterial"]);
         shipping = Convert.ToInt32(Request.Form["shipping"]);
-        total = deskQuote.Total;
 
-        var insertDeskCommand = "INSERT INTO Desk (Width, Depth, NumOfDrawers, MaterialId) VALUES(@0, @1, @2, @3)";
-        db.Execute(insertDeskCommand, width, depth, numOfDrawers, surfaceMaterial);
+        Desk desk = new Desk(width, depth, numOfDrawers, surfaceMaterial);
+        DeskQuote deskQuote = new DeskQuote();
 
-        var insertDeskQuoteCommand = "INSERT INTO DeskQuote (CustomerId, DeskId, ShippingId, Date, total) VALUES(@0, @1, @2, @3, @4)";
+        total = deskQuote.GetQuote(desk, shipping);
+
+        var insertDeskCommand = "INSERT INTO Desk (Depth, Width, NumOfDrawers, MaterialId) VALUES(@0, @1, @2, @3)";
+        db.Execute(insertDeskCommand, depth, width, numOfDrawers, surfaceMaterial);
+
+        var insertDeskQuoteCommand = "INSERT INTO DeskQuote (CustomerId, Date, DeskId, MaterialId, ShippingId, Total) VALUES(@0, @1, @2, @3, @4, @5)";
         var deskId = db.GetLastInsertId();
 
-        db.Execute(insertDeskQuoteCommand, customerName, deskId, shipping, total);
+        db.Execute(insertDeskQuoteCommand, customerName, DateTime.Now, deskId, surfaceMaterial, shipping, total);
         Response.Redirect("~/Desks");
     }
-
 
 }
 <h2>Add a Desk</h2>
@@ -63,7 +66,14 @@
         <legend>Desk Information</legend>
         <p>
             <label for="customerName">Customer Name:</label>
-            <input id="customerName" type="text" name="customerName" value="@Request.Form["customerName"]" />
+            <select id="customerName" name="customerName">
+                <option disabled selected>Select Customer</option>
+                @foreach (var m in allCustomer)
+                {
+                    <option title='@m.CustomerName' value="@m.CustomerId">@m.CustomerName</option>
+                }
+
+            </select>
             @Html.ValidationMessage("customerName")
         </p>
 
@@ -87,11 +97,11 @@
 
         <p>
             <label for="surfaceMaterial">Surface Material:</label>
-            <select>
+            <select id="surfaceMaterial" name="surfaceMaterial">
                 <option disabled selected>Select Material</option>
                 @foreach (var m in allMaterials)
                 {
-                    <option title='@m.MaterialName' value="m.MaterialId">@m.MaterialName</option>
+                    <option title='@m.MaterialName' value="@m.MaterialId">@m.MaterialName</option>
                 }
 
             </select>
@@ -99,15 +109,15 @@
         </p>
 
         <p>
-            <label for="rushOrder">Rush Order: </label>
-            <select id="rushOrder" name="rushOrder">
+            <label for="shipping">Rush Order: </label>
+            <select id="shipping" name="shipping">
                 <option disabled selected>Select Shipping</option>
                 @foreach (var m in allShippingDays)
                 {
-                    <option title='@m.ShippingDays' value="m.ShippingId">@m.ShippingDays</option>
+                    <option title='@m.ShippingDays' value="@m.ShippingId">@m.ShippingDays</option>
                 }
             </select>
-            @Html.ValidationMessage("rushOrder")
+            @Html.ValidationMessage("shipping")
         </p>
 
         <p><input type="submit" name="buttonSubmit" value="Add Desk" /></p>
