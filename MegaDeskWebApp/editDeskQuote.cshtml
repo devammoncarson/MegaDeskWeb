@@ -5,8 +5,11 @@
 
     var db = WebMatrix.Data.Database.Open("MegaDeskDB2");
 
-    var shippingData = db.Query("SELECT * FROM Shipping");
-    var surfaceData = db.Query("SELECT * FROM SurfaceMaterial");
+    IEnumerable<dynamic> allMaterials;
+    allMaterials = db.Query("SELECT MaterialName FROM SurfaceMaterial");
+
+    IEnumerable<dynamic> allShippingDays;
+    allShippingDays = db.Query("SELECT ShippingDays FROM Shipping");
 
     decimal total = 0;
 
@@ -35,7 +38,7 @@
         width = deskQuoteData.Width;
         depth = deskQuoteData.Depth;
         numOfDrawers = deskQuoteData.NumOfDrawers;
-        surfaceMaterial = deskQuoteData.MaterialId;
+        //surfaceMaterial = deskQuoteData.MaterialId;
         shipping = deskQuoteData.ShippingId;
         surfaceMaterialName = db.QuerySingle("SELECT MaterialName FROM SurfaceMaterials WHERE MaterialId = @0", surfaceMaterial).SurfaceMaterial;
         shippingDays = db.QuerySingle("SELECT ShippingDays FROM Shipping WHERE ShippingId = @0", shipping).ShippingDays;
@@ -100,7 +103,7 @@
             <label for="surfaceMaterial">Surface Material:</label>
             <select id="surfaceMaterial" type="text" name="surfaceMaterial">
                 <option selected disabled>Select a Material</option>
-                @foreach (var row in surfaceData)
+                @foreach (var row in allMaterials)
                 {
                     <option value="@row.MaterialId">@row.MaterialName</option>
                 }
@@ -112,7 +115,7 @@
             <label for="rushOrder">Rush Order:(num)</label>
             <select id="rushOrder" name="rushOrder">
                 <option selected disabled>Select Shipping</option>
-                @foreach (var row in shippingData)
+                @foreach (var row in allShippingDays)
                 {
                     <option value="@row.ShippingId">@row.ShippingDays</option>
                 }
