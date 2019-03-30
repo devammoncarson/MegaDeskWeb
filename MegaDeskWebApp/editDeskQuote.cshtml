@@ -8,6 +8,7 @@
     IEnumerable<dynamic> allMaterials;
     allMaterials = db1.Query("SELECT MaterialId, MaterialName FROM SurfaceMaterial");
 
+
     IEnumerable<dynamic> allShippingDays;
     allShippingDays = db1.Query("SELECT ShippingId, ShippingDays FROM Shipping");
 
@@ -82,6 +83,7 @@
     {
         var customerName2 = Request.Form["customerName"];
         var deskId2 = Request.Form["deskId"];
+        var deskQuoteId2 = Request.Form["deskQuoteId"];
         var width2 = Convert.ToDecimal(Request.Form["width"]);
         var depth2 = Convert.ToDecimal(Request.Form["depth"]);
         var numOfDrawers2 = Convert.ToInt32(Request.Form["numOfDrawers"]);
@@ -93,11 +95,11 @@
 
         total = deskQuote.GetQuote(desk, shipping2);
 
-        var insertDeskCommand = "UPDATE Desk SET (Depth=@0, Width=@1, NumOfDrawers=@2, MaterialId=@3) WHERE Desk=@4)";
-        db1.Execute(insertDeskCommand, depth2, width2, numOfDrawers2, surfaceMaterial2, deskId);
+        var insertDeskCommand = "UPDATE Desk SET Depth=@0, Width=@1, NumOfDrawers=@2, MaterialId=@3 WHERE DeskId=@4";
+        db1.Execute(insertDeskCommand, depth2, width2, numOfDrawers2, surfaceMaterial2, deskId2);
 
-        var insertDeskQuoteCommand = "UPDATE DeskQuote SET (CustomerId, Date, DeskId, MaterialId, ShippingId, Total) WHERE DeskQuoteId=@6 VALUES(@0, @1, @2, @3, @4, @5, @6)";
-        db1.Execute(insertDeskQuoteCommand, customerName2, DateTime.Now, deskId, surfaceMaterial2, shipping2, total, deskQuoteId);
+        var insertDeskQuoteCommand = "UPDATE DeskQuote SET CustomerId=@0, Date=@1, DeskId=@2, MaterialId=@3, ShippingId=@4, Total=@5 WHERE DeskQuoteId=@6";
+        db1.Execute(insertDeskQuoteCommand, customerName2, DateTime.Now, deskId2, surfaceMaterial2, shipping2, total, deskQuoteId2);
 
         Response.Redirect("~/Desks");
     }
@@ -112,11 +114,16 @@
         <legend>Desk Information</legend>
         <p>
             <label for="customerName">Customer Name:</label>
-            <select id="customerName" name="customerName">
-                <option disabled selected>Select Material</option>
+            <select id="customerName" name="customerName"> 
+                @*<option disabled selected>Select Material</option>*@
                 @foreach (var m in allCustomer)
                 {
-                    <option title='@m.CustomerName' value="@m.CustomerId">@m.CustomerName</option>
+                    if (m.CustomerId == customerId) {
+                        <option selected title='@m.CustomerName' value="@m.CustomerId">@m.CustomerName</option>
+                    } else
+                    {
+                        <option title='@m.CustomerName' value="@m.CustomerId">@m.CustomerName</option>
+                    }
                 }
 
             </select>
@@ -147,7 +154,15 @@
                 <option disabled selected>Select Material</option>
                 @foreach (var m in allMaterials)
                 {
-                    <option title='@m.MaterialName' value="@m.MaterialId">@m.MaterialName</option>
+                    if (m.MaterialName == surfaceMaterial)
+                    {
+                        <option selected title='@m.MaterialName' value="@m.MaterialId">@m.MaterialName</option>
+                    }
+                    else
+                    {
+                        <option title='@m.MaterialName' value="@m.MaterialId">@m.MaterialName</option>
+                    }
+
                 }
 
             </select>
@@ -160,13 +175,21 @@
                 <option disabled selected>Select Shipping</option>
                 @foreach (var m in allShippingDays)
                 {
-                    <option title='@m.ShippingDays' value="@m.ShippingId">@m.ShippingDays</option>
+                    if (m.ShippingDays == shipping)
+                    {
+                        <option selected title='@m.ShippingDays' value="@m.ShippingId">@m.ShippingDays</option>
+                    }
+                    else
+                    {
+                        <option title='@m.ShippingDays' value="@m.ShippingId">@m.ShippingDays</option>
+                    }
                 }
             </select>
             @Html.ValidationMessage("shipping")
         </p>
 
-        <p value="@deskId" >Desk ID: @deskId</p>
+        <input type="hidden" value="@deskId" name="deskId" />
+        <input type="hidden" value="@deskQuoteId" name="deskQuoteId" />
 
         <p><input type="submit" name="buttonSubmit" value="Edit Desk" /></p>
 
